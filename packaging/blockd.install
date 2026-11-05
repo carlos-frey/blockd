@@ -1,0 +1,11 @@
+post_install() {
+  systemd-sysusers blockd.conf
+  echo "==> sudo systemctl enable --now blockd blockd-dns"
+  echo "==> sudo gpasswd -a \$USER blockd   (e faça logout/login)"
+}
+
+pre_remove() {
+  systemctl disable --now blockd.service 2>/dev/null || true
+  /usr/bin/blockd teardown 2>/dev/null || true
+  systemctl disable --now blockd-dns.service 2>/dev/null || true
+}

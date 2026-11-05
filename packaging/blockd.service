@@ -1,0 +1,20 @@
+[Unit]
+Description=blockd — bloqueio de apps e sites que viciam
+Documentation=file:///usr/share/doc/blockd/README.md
+After=network-pre.target systemd-resolved.service
+Wants=network-pre.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/blockd
+Restart=on-failure
+RestartSec=2
+RuntimeDirectory=blockd
+RuntimeDirectoryMode=0755
+StateDirectory=blockd
+StateDirectoryMode=0755
+# Parar o serviço NÃO libera nada: regras e DNS continuam valendo.
+# Para remover tudo do sistema: systemctl stop blockd && blockd teardown
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,20 @@
+table inet blockd
+delete table inet blockd
+table inet blockd {
+	comment "blockd fp=808cdd4e1a293a30 rules=6"
+	set dyn4 { type ipv4_addr; flags interval; auto-merge; }
+	set dyn6 { type ipv6_addr; flags interval; auto-merge; }
+	chain deny {
+		meta l4proto tcp reject with tcp reset
+		reject with icmpx admin-prohibited
+	}
+	chain output {
+		type filter hook output priority filter - 1; policy accept;
+		socket cgroupv2 level 1 "blockd.jail" jump deny
+		ip daddr @dyn4 jump deny
+		ip6 daddr @dyn6 jump deny
+		ip daddr { 10.9.0.0/16 } jump deny
+		ip daddr { 1.1.1.1, 8.8.8.8 } meta l4proto { tcp, udp } th dport { 443, 853 } jump deny
+		ip6 daddr { 2606:4700:4700::1111 } meta l4proto { tcp, udp } th dport { 443, 853 } jump deny
+	}
+}

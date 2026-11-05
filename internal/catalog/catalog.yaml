@@ -1,0 +1,197 @@
+# Catálogo embutido do blockd.
+# Domínios bloqueiam também os subdomínios. Use `{name: x.com, ip_block: true}`
+# para derrubar também os IPs resolvidos (cuidado com CDNs compartilhadas).
+# Processos: nome do executável (comm ou basename do exe); o app continua
+# abrindo, mas fica sem rede.
+
+apps:
+  # ── Redes sociais ────────────────────────────────────────────────
+  - id: instagram
+    name: Instagram
+    category: Redes sociais
+    domains: [instagram.com, cdninstagram.com, instagr.am, ig.me]
+  - id: facebook
+    name: Facebook
+    category: Redes sociais
+    domains: [facebook.com, fb.com, fb.me, fbcdn.net, facebook.net, messenger.com, m.me]
+  - id: tiktok
+    name: TikTok
+    category: Redes sociais
+    domains: [tiktok.com, tiktokv.com, tiktokcdn.com, tiktokcdn-us.com, tiktokw.us, byteoversea.com, ibytedtos.com, musical.ly]
+  - id: twitter
+    name: X / Twitter
+    category: Redes sociais
+    domains: [x.com, twitter.com, twimg.com, t.co]
+  - id: reddit
+    name: Reddit
+    category: Redes sociais
+    domains: [reddit.com, redd.it, redditmedia.com, redditstatic.com, reddituploads.com]
+  - id: kwai
+    name: Kwai
+    category: Redes sociais
+    domains: [kwai.com, kwai.net, kwaicdn.com]
+  - id: threads
+    name: Threads
+    category: Redes sociais
+    domains: [threads.net, threads.com]
+  - id: bluesky
+    name: Bluesky
+    category: Redes sociais
+    domains: [bsky.app, bsky.social]
+  - id: pinterest
+    name: Pinterest
+    category: Redes sociais
+    domains: [pinterest.com, pinterest.com.br, pinimg.com, pin.it]
+  - id: linkedin
+    name: LinkedIn
+    category: Redes sociais
+    description: Fora dos perfis prontos (útil para procurar vaga).
+    domains: [linkedin.com, licdn.com, lnkd.in]
+
+  # ── Vídeo e streaming ────────────────────────────────────────────
+  - id: youtube
+    name: YouTube
+    category: Vídeo
+    domains: [youtube.com, youtu.be, ytimg.com, googlevideo.com, youtube-nocookie.com, youtubei.googleapis.com]
+  - id: twitch
+    name: Twitch
+    category: Vídeo
+    domains: [twitch.tv, ttvnw.net, jtvnw.net, twitchcdn.net, twitchsvc.net]
+  - id: netflix
+    name: Netflix
+    category: Vídeo
+    domains: [netflix.com, nflxvideo.net, nflximg.net, nflxext.com, nflxso.net]
+  - id: primevideo
+    name: Prime Video
+    category: Vídeo
+    domains: [primevideo.com, aiv-cdn.net, aiv-delivery.net]
+  - id: disneyplus
+    name: Disney+
+    category: Vídeo
+    domains: [disneyplus.com, bamgrid.com, dssott.com, disney-plus.net]
+  - id: kick
+    name: Kick
+    category: Vídeo
+    domains: [kick.com]
+
+  # ── Chat ─────────────────────────────────────────────────────────
+  - id: discord
+    name: Discord
+    category: Chat
+    domains: [discord.com, discord.gg, discordapp.com, discordapp.net, discord.media, discordcdn.com]
+    processes: [Discord, discord, DiscordCanary, DiscordPTB, vesktop, Vesktop, webcord, legcord]
+  - id: whatsapp
+    name: WhatsApp
+    category: Chat
+    domains: [whatsapp.com, whatsapp.net, wa.me]
+    processes: [whatsapp-for-linux, wasistlos, zapzap]
+  - id: telegram
+    name: Telegram
+    category: Chat
+    domains: [telegram.org, telegram.me, t.me, telesco.pe]
+    processes: [telegram-desktop, Telegram, AyuGram, ayugram-desktop]
+
+  # ── Games ────────────────────────────────────────────────────────
+  - id: steam
+    name: Steam
+    category: Games
+    description: Jogos abertos pela Steam herdam o bloqueio de rede.
+    domains: [steampowered.com, steamcommunity.com, steamstatic.com, steamcontent.com, steamserver.net, steamgames.com]
+    processes: [steam, steamwebhelper]
+  - id: epic
+    name: Epic Games
+    category: Games
+    domains: [epicgames.com, epicgames.dev, epicgames.net, fortnite.com]
+    processes: [heroic, legendary]
+  - id: riot
+    name: Riot Games (LoL, Valorant)
+    category: Games
+    domains: [riotgames.com, leagueoflegends.com, riotcdn.net, playvalorant.com, pvp.net]
+  - id: roblox
+    name: Roblox
+    category: Games
+    domains: [roblox.com, rbxcdn.com, rbx.com]
+    processes: [sober, vinegar]
+  - id: chess
+    name: Chess.com / Lichess
+    category: Games
+    domains: [chess.com, chesscomfiles.com, lichess.org, lichess.ovh]
+
+  # ── Notícias ─────────────────────────────────────────────────────
+  - id: g1
+    name: G1
+    category: Notícias
+    domains: [g1.globo.com, ge.globo.com]
+  - id: uol
+    name: UOL
+    category: Notícias
+    domains: [uol.com.br]
+  - id: hackernews
+    name: Hacker News
+    category: Notícias
+    domains: [news.ycombinator.com]
+
+  # ── Sistema ──────────────────────────────────────────────────────
+  - id: doh
+    name: DoH público
+    category: Sistema
+    description: >-
+      Fecha DNS-over-HTTPS/TLS dos resolvers públicos, para o navegador não
+      contornar o bloqueio por DNS. Também desliga o DoH padrão do Firefox.
+    domains:
+      - use-application-dns.net
+      - cloudflare-dns.com
+      - dns.google
+      - dns.quad9.net
+      - doh.opendns.com
+      - dns.nextdns.io
+      - doh.mullvad.net
+      - dns.adguard-dns.com
+      - dns.adguard.com
+      - doh.cleanbrowsing.org
+    ips:
+      - 1.1.1.1
+      - 1.0.0.1
+      - 2606:4700:4700::1111
+      - 2606:4700:4700::1001
+      - 8.8.8.8
+      - 8.8.4.4
+      - 2001:4860:4860::8888
+      - 2001:4860:4860::8844
+      - 9.9.9.9
+      - 149.112.112.112
+      - 2620:fe::fe
+      - 2620:fe::9
+      - 208.67.222.222
+      - 208.67.220.220
+      - 94.140.14.14
+      - 94.140.15.15
+      - 194.242.2.2
+    ports: [443, 853]
+
+profiles:
+  - id: redes-sociais
+    name: Redes sociais
+    description: Feeds infinitos e afins.
+    apps: [doh, instagram, facebook, tiktok, twitter, reddit, kwai, threads, bluesky, pinterest]
+  - id: video
+    name: Vídeo & streaming
+    description: YouTube, lives e streaming.
+    apps: [doh, youtube, twitch, netflix, primevideo, disneyplus, kick]
+  - id: games
+    name: Games
+    description: Lojas, launchers e jogos online.
+    apps: [doh, steam, epic, riot, roblox, chess]
+  - id: trabalho
+    name: Trabalho
+    description: Redes, vídeo e games fora; chat e notícias liberados.
+    apps: [doh, instagram, facebook, tiktok, twitter, reddit, kwai, threads, bluesky, pinterest,
+           youtube, twitch, netflix, primevideo, disneyplus, kick,
+           steam, epic, riot, roblox, chess]
+  - id: foco-total
+    name: Foco total
+    description: Tudo que distrai, exceto chat.
+    apps: [doh, instagram, facebook, tiktok, twitter, reddit, kwai, threads, bluesky, pinterest,
+           youtube, twitch, netflix, primevideo, disneyplus, kick,
+           steam, epic, riot, roblox, chess,
+           g1, uol, hackernews]

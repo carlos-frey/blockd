@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=blockd
+GenericName=Bloqueio de apps
+Comment=Bloqueie apps e sites que viciam, por perfis
+Exec=blockd-gui
+Icon=security-high
+Terminal=false
+Categories=Utility;Security;
+Keywords=block;firewall;foco;focus;

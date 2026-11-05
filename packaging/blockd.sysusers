@@ -1,0 +1,2 @@
+# Membros do grupo blockd podem controlar o daemon (blockctl / blockd-gui).
+g blockd - -

@@ -1,0 +1,20 @@
+# Pacote local: cd packaging && makepkg -si
+pkgname=blockd
+pkgver=0.1.0
+pkgrel=1
+pkgdesc="Bloqueio de apps e sites que viciam: catálogo, perfis, nftables + dnsmasq, CLI e GUI ImGui"
+arch=('x86_64')
+license=('GPL-3.0-or-later')
+depends=('nftables' 'dnsmasq' 'systemd' 'iproute2' 'libglvnd' 'libx11')
+makedepends=('go' 'gcc')
+install=blockd.install
+
+build() {
+  cd "$startdir/.."
+  make all
+}
+
+package() {
+  cd "$startdir/.."
+  make DESTDIR="$pkgdir" install
+}
