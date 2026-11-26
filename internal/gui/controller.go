@@ -66,7 +66,7 @@ type CLIController struct {
 // FindBlockctl prefers a blockctl next to the GUI binary, then $PATH.
 func FindBlockctl() string {
 	if exe, err := os.Executable(); err == nil {
-		p := filepath.Join(filepath.Dir(exe), "blockctl")
+		p := filepath.Join(filepath.Dir(exe), "blockctl"+exeSuffix)
 		if _, err := os.Stat(p); err == nil {
 			return p
 		}
@@ -86,6 +86,7 @@ func (c *CLIController) run(ctx context.Context, out any, args ...string) error 
 	}
 	full = append(full, args...)
 	cmd := exec.CommandContext(ctx, c.Bin, full...)
+	hideConsole(cmd)
 	var stdout, stderr bytes.Buffer
 	cmd.Stdout, cmd.Stderr = &stdout, &stderr
 	runErr := cmd.Run()

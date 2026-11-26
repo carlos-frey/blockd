@@ -236,11 +236,7 @@ func (a *App) offline(s snapshot) {
 		wrapped(msg, colBlock, w-40)
 		imgui.Dummy(vec(0, 6))
 		a.medium(15, func() { text("Como resolver", colText) })
-		for _, l := range []string{
-			"sudo systemctl enable --now blockd",
-			"sudo gpasswd -a $USER blockd   (depois faça logout/login)",
-			"blockctl status   — para ver o erro no terminal",
-		} {
+		for _, l := range offlineHints {
 			text("  "+l, colMuted)
 		}
 		imgui.Dummy(vec(0, 6))

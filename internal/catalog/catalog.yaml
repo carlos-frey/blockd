@@ -2,7 +2,8 @@
 # Domínios bloqueiam também os subdomínios. Use `{name: x.com, ip_block: true}`
 # para derrubar também os IPs resolvidos (cuidado com CDNs compartilhadas).
 # Processos: nome do executável (comm ou basename do exe); o app continua
-# abrindo, mas fica sem rede.
+# abrindo, mas fica sem rede. No Windows a comparação ignora maiúsculas e o
+# ".exe" (Discord casa com Discord.exe).
 
 apps:
   # ── Redes sociais ────────────────────────────────────────────────
@@ -84,7 +85,7 @@ apps:
     name: WhatsApp
     category: Chat
     domains: [whatsapp.com, whatsapp.net, wa.me]
-    processes: [whatsapp-for-linux, wasistlos, zapzap]
+    processes: [whatsapp-for-linux, wasistlos, zapzap, WhatsApp, WhatsApp.Root]
   - id: telegram
     name: Telegram
     category: Chat
@@ -102,16 +103,17 @@ apps:
     name: Epic Games
     category: Games
     domains: [epicgames.com, epicgames.dev, epicgames.net, fortnite.com]
-    processes: [heroic, legendary]
+    processes: [heroic, legendary, EpicGamesLauncher, EpicWebHelper]
   - id: riot
     name: Riot Games (LoL, Valorant)
     category: Games
     domains: [riotgames.com, leagueoflegends.com, riotcdn.net, playvalorant.com, pvp.net]
+    processes: [RiotClientServices, RiotClientUx, LeagueClient, LeagueClientUx]
   - id: roblox
     name: Roblox
     category: Games
     domains: [roblox.com, rbxcdn.com, rbx.com]
-    processes: [sober, vinegar]
+    processes: [sober, vinegar, RobloxPlayerBeta]
   - id: chess
     name: Chess.com / Lichess
     category: Games

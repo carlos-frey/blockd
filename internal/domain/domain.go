@@ -37,7 +37,8 @@ type App struct {
 	Category    string   `json:"category" yaml:"category"`
 	Description string   `json:"description,omitempty" yaml:"description,omitempty"`
 	Domains     []Domain `json:"domains,omitempty" yaml:"domains,omitempty"`
-	// Processes are executable names (comm or exe basename) whose network is cut.
+	// Processes are executable names (comm or exe basename; on Windows the
+	// image name, case-insensitive, with or without ".exe") whose network is cut.
 	Processes []string `json:"processes,omitempty" yaml:"processes,omitempty"`
 	// IPs are fixed addresses or CIDRs, blocked on Ports (all ports when empty).
 	IPs     []string `json:"ips,omitempty" yaml:"ips,omitempty"`

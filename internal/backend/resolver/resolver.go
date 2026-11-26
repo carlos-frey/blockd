@@ -17,29 +17,36 @@ import (
 )
 
 type Upstream struct {
-	ResolvFile string   // e.g. /run/NetworkManager/no-stub-resolv.conf
-	Fallback   []string // used when the file has no usable server
-	next       atomic.Uint32
+	ResolvFile string // e.g. /run/NetworkManager/no-stub-resolv.conf
+	// Servers, when set, replaces ResolvFile as the source of servers
+	// (Windows reads them from the network adapters).
+	Servers  func() []string
+	Fallback []string // used when no usable server is found
+	next     atomic.Uint32
 }
 
 var _ backend.Resolver = (*Upstream)(nil)
 
 func (u *Upstream) servers() []string {
-	var out []string
-	if f, err := os.Open(u.ResolvFile); err == nil {
+	var candidates, out []string
+	if u.Servers != nil {
+		candidates = u.Servers()
+	} else if f, err := os.Open(u.ResolvFile); err == nil {
 		defer f.Close()
 		sc := bufio.NewScanner(f)
 		for sc.Scan() {
 			fields := strings.Fields(sc.Text())
-			if len(fields) < 2 || fields[0] != "nameserver" {
-				continue
+			if len(fields) >= 2 && fields[0] == "nameserver" {
+				candidates = append(candidates, fields[1])
 			}
-			a, err := netip.ParseAddr(fields[1])
-			if err != nil || a.IsLoopback() {
-				continue // never ask ourselves or the resolved stub
-			}
-			out = append(out, fields[1])
 		}
+	}
+	for _, s := range candidates {
+		a, err := netip.ParseAddr(s)
+		if err != nil || a.IsLoopback() {
+			continue // never ask ourselves or the resolved stub
+		}
+		out = append(out, s)
 	}
 	if len(out) == 0 {
 		out = slices.Clone(u.Fallback)

@@ -1,0 +1,3 @@
+O `make windows-setup` copia para cá os binários do Windows e os scripts de
+packaging/windows antes de compilar o blockd-setup.exe, que os embute.
+Só este arquivo vai para o git.

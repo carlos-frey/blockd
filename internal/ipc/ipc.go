@@ -1,5 +1,5 @@
 // Package ipc carries api.Request/api.Response as JSON lines over the daemon's
-// Unix socket.
+// Unix socket (AF_UNIX also on Windows 10 1803+).
 package ipc
 
 import (
@@ -11,16 +11,12 @@ import (
 	"log/slog"
 	"net"
 	"os"
-	"os/user"
-	"strconv"
 	"time"
 
 	"github.com/carlos-frey/blockd/internal/api"
 	"github.com/carlos-frey/blockd/internal/domain"
 	"github.com/carlos-frey/blockd/internal/engine"
 )
-
-const DefaultSocket = "/run/blockd/blockd.sock"
 
 // SocketPath honours $BLOCKD_SOCKET (handy for dry runs).
 func SocketPath() string {
@@ -175,9 +171,9 @@ func (s *Server) serveConn(ctx context.Context, conn net.Conn) {
 }
 
 // ErrAlreadyRunning means another daemon answers on the socket.
-var ErrAlreadyRunning = errors.New("já existe um blockd rodando neste socket (systemctl status blockd)")
+var ErrAlreadyRunning = errors.New("já existe um blockd rodando neste socket " + hintStatus)
 
-// Listen creates the socket, readable and writable by owner and group.
+// Listen creates the socket, readable and writable by the admin and group.
 // A stale socket file is replaced, but a live one is left alone: removing it
 // would orphan the running daemon.
 func Listen(path, group string) (net.Listener, error) {
@@ -185,26 +181,17 @@ func Listen(path, group string) (net.Listener, error) {
 		conn.Close()
 		return nil, ErrAlreadyRunning
 	}
+	if err := prepareSocket(path, group); err != nil {
+		return nil, err
+	}
 	_ = os.Remove(path)
 	ln, err := net.Listen("unix", path)
 	if err != nil {
 		return nil, err
 	}
-	if err := os.Chmod(path, 0o660); err != nil {
+	if err := secureSocket(path, group); err != nil {
 		ln.Close()
 		return nil, err
-	}
-	if group != "" {
-		g, err := user.LookupGroup(group)
-		if err != nil {
-			ln.Close()
-			return nil, fmt.Errorf("grupo %q: %w", group, err)
-		}
-		gid, _ := strconv.Atoi(g.Gid)
-		if err := os.Chown(path, 0, gid); err != nil {
-			ln.Close()
-			return nil, err
-		}
 	}
 	return ln, nil
 }
@@ -222,9 +209,9 @@ func (c *Client) Raw(ctx context.Context, method string, params any) api.Respons
 	unavailable := func(err error) api.Response {
 		msg := fmt.Sprintf("não consegui falar com o blockd em %s: %v", c.Path, err)
 		if errors.Is(err, os.ErrPermission) {
-			msg += " (seu usuário está no grupo blockd? faça logout/login depois de adicionar)"
+			msg += " " + hintPermission
 		} else {
-			msg += " (o serviço está rodando? systemctl status blockd)"
+			msg += " " + hintNotRunning
 		}
 		return api.Response{Error: &domain.Error{Code: domain.CodeDaemonUnavailable, Message: msg}}
 	}

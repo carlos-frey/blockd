@@ -1,10 +1,13 @@
-// blockd is the root daemon: it owns the state, enforces it with nftables,
-// dnsmasq and the process jail, and serves blockctl on a Unix socket.
+// blockd is the privileged daemon: it owns the state, enforces it with the
+// platform backends and serves blockctl on a Unix socket.
 //
-//	blockd              run the daemon (systemd: blockd.service)
+//	blockd              run the daemon (systemd unit, or Windows service)
 //	blockd teardown     remove every rule/redirect; the saved state is kept
 //	blockd kick         make open browsers drop cached DNS and sessions
 //	blockd --dry-run    run without touching the system (fake backends)
+//
+// The concrete backends are picked in platform_<os>.go; this file only holds
+// what every platform shares.
 package main
 
 import (
@@ -12,6 +15,7 @@ import (
 	"errors"
 	"flag"
 	"fmt"
+	"io"
 	"log/slog"
 	"net"
 	"os"
@@ -20,12 +24,7 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/carlos-frey/blockd/internal/backend/dnsmasq"
 	"github.com/carlos-frey/blockd/internal/backend/fake"
-	"github.com/carlos-frey/blockd/internal/backend/kick"
-	"github.com/carlos-frey/blockd/internal/backend/nft"
-	"github.com/carlos-frey/blockd/internal/backend/proctrack"
-	"github.com/carlos-frey/blockd/internal/backend/resolver"
 	"github.com/carlos-frey/blockd/internal/catalog"
 	"github.com/carlos-frey/blockd/internal/engine"
 	"github.com/carlos-frey/blockd/internal/ipc"
@@ -36,32 +35,33 @@ type options struct {
 	stateDir string
 	socket   string
 	group    string
-	jail     string
 	dryRun   bool
 	verbose  bool
+	platformOptions
 }
 
 func main() {
 	var o options
 	fs := flag.NewFlagSet("blockd", flag.ExitOnError)
-	fs.StringVar(&o.stateDir, "state-dir", "/var/lib/blockd", "diretório do estado")
+	fs.StringVar(&o.stateDir, "state-dir", defaultStateDir(), "diretório do estado")
 	fs.StringVar(&o.socket, "socket", ipc.SocketPath(), "socket de controle")
-	fs.StringVar(&o.group, "group", "blockd", "grupo com acesso ao socket (vazio = só root)")
-	fs.StringVar(&o.jail, "jail", "blockd.jail", "cgroup (relativo à raiz cgroup2) dos apps sem rede")
+	fs.StringVar(&o.group, "group", "blockd", groupHelp)
 	fs.BoolVar(&o.dryRun, "dry-run", false, "não mexe no sistema: backends falsos, só log")
 	fs.BoolVar(&o.verbose, "v", false, "log detalhado")
+	o.platformOptions.register(fs)
 	fs.Usage = func() {
 		fmt.Fprintf(fs.Output(), "uso: blockd [flags] [teardown|kick]\n\n")
 		fs.PrintDefaults()
 	}
 	_ = fs.Parse(os.Args[1:])
 
-	level := slog.LevelInfo
-	if o.verbose {
-		level = slog.LevelDebug
+	// Under the Windows service manager the process has no console: the
+	// service wrapper runs the daemon itself and logs to a file.
+	if handled, code := maybeService(o); handled {
+		os.Exit(code)
 	}
-	log := slog.New(slog.NewTextHandler(os.Stderr, &slog.HandlerOptions{Level: level}))
 
+	log := newLogger(os.Stderr, o.verbose)
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
 
@@ -73,7 +73,7 @@ func main() {
 		err = teardown(ctx, o, log)
 	case "kick":
 		// The daemon does this by itself when a domain gets blocked.
-		err = kick.New().Kick(ctx)
+		err = newKicker(log).Kick(ctx)
 	default:
 		fs.Usage()
 		os.Exit(2)
@@ -84,7 +84,16 @@ func main() {
 	}
 }
 
-// build is the composition root: the only place that picks implementations.
+func newLogger(w io.Writer, verbose bool) *slog.Logger {
+	level := slog.LevelInfo
+	if verbose {
+		level = slog.LevelDebug
+	}
+	return slog.New(slog.NewTextHandler(w, &slog.HandlerOptions{Level: level}))
+}
+
+// build is the composition root: dry runs get the fakes, real runs the
+// platform backends from wireSystem.
 func build(o options, log *slog.Logger) (*engine.Service, error) {
 	apps, profiles, err := catalog.Builtin()
 	if err != nil {
@@ -105,16 +114,12 @@ func build(o options, log *slog.Logger) (*engine.Service, error) {
 		d.Kicker = &fake.Kicker{Log: log}
 		return engine.New(d)
 	}
-	if os.Geteuid() != 0 {
-		return nil, errors.New("blockd precisa rodar como root (ou use --dry-run)")
+	if err := checkPrivileges(); err != nil {
+		return nil, err
 	}
-	dnsCfg := dnsmasq.DefaultConfig()
-	dnsCfg.ConfPath = filepath.Join(o.stateDir, "dnsmasq.conf")
-	d.Network = nft.New(o.jail)
-	d.DNS = dnsmasq.New(dnsCfg)
-	d.Procs = proctrack.New(o.jail, log)
-	d.Kicker = kick.New()
-	d.Resolver = &resolver.Upstream{ResolvFile: dnsCfg.ResolvFile, Fallback: dnsCfg.Fallback}
+	if err := wireSystem(o, &d, log); err != nil {
+		return nil, err
+	}
 	return engine.New(d)
 }
 
@@ -152,7 +157,7 @@ func teardown(ctx context.Context, o options, log *slog.Logger) error {
 	// With the daemon up, the next reconcile would put everything back.
 	if conn, err := net.DialTimeout("unix", o.socket, time.Second); err == nil {
 		conn.Close()
-		return errors.New("o blockd está rodando e reaplicaria tudo; pare antes: systemctl stop blockd")
+		return errors.New("o blockd está rodando e reaplicaria tudo; pare antes: " + stopHint)
 	}
 	svc, err := build(o, log)
 	if err != nil {

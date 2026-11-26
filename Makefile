@@ -3,7 +3,7 @@ DESTDIR ?=
 GO      ?= go
 BIN     := bin
 
-.PHONY: all cli gui test test-netns install uninstall clean
+.PHONY: all cli gui windows windows-gui windows-setup test test-netns install uninstall clean
 
 all: cli gui
 
@@ -13,6 +13,30 @@ cli:
 # cimgui-go compila o Dear ImGui via cgo: a primeira vez leva alguns minutos.
 gui:
 	$(GO) build -trimpath -o $(BIN)/ ./cmd/blockd-gui
+
+# Windows (amd64): daemon e CLI compilam cruzado sem cgo. Instale no Windows
+# com packaging/windows/install.ps1 (veja o README).
+windows:
+	GOOS=windows GOARCH=amd64 $(GO) build -trimpath -o $(BIN)/windows/ ./cmd/blockd ./cmd/blockctl
+	cp packaging/windows/*.ps1 $(BIN)/windows/
+
+# Instalador único: embute o que `make windows` (e `make windows-gui`, se
+# rodou antes) deixou em bin/windows, mais os scripts de packaging/windows.
+VERSION ?= $(shell git describe --tags --always --dirty 2>/dev/null || echo dev)
+SETUP_PAYLOAD := cmd/blockd-setup/payload
+
+windows-setup: windows
+	rm -f $(SETUP_PAYLOAD)/*.exe $(SETUP_PAYLOAD)/*.ps1
+	cp $(BIN)/windows/blockd.exe $(BIN)/windows/blockctl.exe packaging/windows/*.ps1 $(SETUP_PAYLOAD)/
+	if [ -f $(BIN)/windows/blockd-gui.exe ]; then cp $(BIN)/windows/blockd-gui.exe $(SETUP_PAYLOAD)/; fi
+	GOOS=windows GOARCH=amd64 $(GO) build -trimpath -ldflags "-s -w -X main.version=$(VERSION)" \
+		-o $(BIN)/windows/blockd-setup.exe ./cmd/blockd-setup
+	rm -f $(SETUP_PAYLOAD)/*.exe $(SETUP_PAYLOAD)/*.ps1
+
+# A GUI usa cgo: para compilar cruzado precisa do mingw-w64 (x86_64-w64-mingw32-gcc).
+windows-gui:
+	GOOS=windows GOARCH=amd64 CGO_ENABLED=1 CC=x86_64-w64-mingw32-gcc CXX=x86_64-w64-mingw32-g++ \
+		$(GO) build -trimpath -ldflags "-H=windowsgui" -o $(BIN)/windows/ ./cmd/blockd-gui
 
 test:
 	$(GO) test ./...

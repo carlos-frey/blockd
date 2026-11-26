@@ -1,6 +1,6 @@
 # blockd
 
-Bloqueio de apps e sites que viciam, no Linux. Você escolhe apps num catálogo,
+Bloqueio de apps e sites que viciam, no Linux e no Windows. Você escolhe apps num catálogo,
 monta perfis (ou usa os prontos) e liga/desliga, à mão, por agenda semanal ou num
 foco com hora para acabar. Por baixo, o blockd mantém
 **nftables**, **DNS** e **cgroups** sempre sincronizados com o que você vê.
@@ -116,6 +116,63 @@ O app **DoH público** entra em todos os perfis prontos. Ele fecha os resolvers
 DNS-over-HTTPS conhecidos e o canary `use-application-dns.net`, que faz o
 Firefox desligar o DoH padrão. Sem isso, o navegador contornaria o DNS.
 
+## Windows
+
+O mesmo daemon, a mesma CLI e a mesma GUI, com backends próprios do Windows (10 1803+
+ou 11, amd64):
+
+```
+blockd-gui.exe ──exec──▶ blockctl.exe --json ──AF_UNIX──▶ blockd.exe (serviço, LocalSystem)
+                                                          ├─ WFP:  provider/sublayer "blockd"
+                                                          ├─ NRPT: regras locais → sinkhole 127.0.0.153
+                                                          └─ jail: um filtro WFP por executável
+```
+
+| Linux | Windows |
+|---|---|
+| nftables (`table inet blockd`) | Filtros **WFP** persistentes num sublayer próprio, em `ALE_AUTH_CONNECT`. Valem com o Firewall do Windows ligado ou desligado. |
+| dnsmasq + systemd-resolved | Regras **NRPT** locais mandam só os domínios bloqueados (e subdomínios) para um sinkhole DNS dentro do próprio daemon, que responde `NXDOMAIN`. O resto do DNS não muda. |
+| cgroup `blockd.jail` | Filtro WFP por caminho do executável (`ALE_APP_ID`). Programas abertos por um alvo (jogos da Steam) entram junto enquanto o pai roda. Programas de `C:\Windows` nunca entram por herança. |
+| `ss -K` | `SetTcpEntry`: só derruba conexões TCP IPv4 (o Windows não tem como derrubar IPv6/UDP de outro processo). |
+| kick (endereço temporário no `lo`) | Limpa o cache DNS e derruba as conexões TCP :443 dos navegadores. O navegador pode segurar o próprio cache por cerca de 1 minuto. |
+| systemd | Serviço `blockd` (automático, reinicia se cair). Log em `%ProgramData%\blockd\blockd.log`. |
+| grupo `blockd` | Grupo local `blockd`, com acesso ao socket `%ProgramData%\blockd\run\blockd.sock`. |
+
+Instalação, a partir do Linux:
+
+```sh
+make windows-gui        # opcional; precisa do mingw-w64 (a GUI usa cgo)
+make windows-setup      # bin/windows/blockd-setup.exe, com tudo dentro
+```
+
+No Windows, basta abrir o `blockd-setup.exe`: ele pede permissão de administrador,
+instala (ou atualiza, ou remove, se já estiver instalado) e se registra em
+**Configurações > Aplicativos**, de onde dá para desinstalar. Sem perguntar:
+`blockd-setup.exe -install` ou `-uninstall`. O exe não é assinado, então o SmartScreen
+avisa na primeira vez ("Mais informações" > "Executar assim mesmo").
+
+Sem o instalador: `make windows` deixa os binários e os scripts soltos em
+`bin/windows/`. Copie a pasta para o Windows e, num PowerShell **como administrador**:
+
+```powershell
+Set-ExecutionPolicy -Scope Process Bypass
+.\install.ps1            # serviço + grupo local blockd com o seu usuário
+blockctl status          # num terminal novo (depois de sair e entrar na sessão)
+.\uninstall.ps1          # remove tudo do sistema; o estado fica em ProgramData
+```
+
+Particularidades:
+
+- Como no Linux, parar o serviço **não** libera nada: os filtros WFP são persistentes e
+  as regras NRPT ficam (os nomes bloqueados passam a dar timeout em vez de NXDOMAIN).
+  Para limpar: `sc.exe stop blockd` e depois `blockd teardown`, como administrador.
+- Se a máquina tiver regras NRPT de Política de Grupo, o Windows ignora as locais. O
+  blockd detecta isso e mostra o erro no `blockctl status`.
+- Se o `127.0.0.153:53` não estiver livre, troque com `blockd --sinkhole 127.0.0.1`
+  no `binPath` do serviço.
+- Os nomes de processo do catálogo valem nos dois sistemas: no Windows a comparação
+  ignora maiúsculas e o `.exe`.
+
 ## Desfazer
 
 - Parar o serviço **não** libera nada: as regras continuam valendo.
@@ -137,10 +194,22 @@ BLOCKD_IT_SOCKET=/tmp/bd/s.sock go test ./internal/gui   # GUI controller ↔ bl
 ```
 
 O código é organizado em torno de interfaces injetadas no `engine.Service`
-(`internal/backend`): `NetworkBlocker` (nft), `DNSBlocker` (dnsmasq),
-`ProcessTracker` (cgroup), `Resolver` e `Store`. As implementações Linux ficam em
-`internal/backend/*`, e os fakes em `internal/backend/fake`. A única montagem
-concreta está em `cmd/blockd/main.go`. A GUI depende da interface `gui.Controller`.
+(`internal/backend`): `NetworkBlocker`, `DNSBlocker`, `ProcessTracker`,
+`SessionKicker`, `Resolver` e `Store`. Implementações:
+
+| Interface | Linux | Windows |
+|---|---|---|
+| `NetworkBlocker` | `nft` | `wfp.Blocker` |
+| `DNSBlocker` | `dnsmasq` | `nrpt` |
+| `ProcessTracker` | `proctrack` | `winproc` (+ `wfp.Jail`) |
+| `SessionKicker` | `kick` | `winkick` |
+| `Resolver` | `resolver` (resolv.conf do NM) | `resolver` (DNS dos adaptadores, `winsys`) |
+
+Os fakes ficam em `internal/backend/fake`. A montagem concreta está em
+`cmd/blockd/platform_<os>.go` (o `main.go` é comum). A parte pura dos backends
+Windows (`wfp/spec.go`, `winproc/winproc.go`, `nrpt/nrpt.go`, `nrpt/sinkhole.go`)
+compila em qualquer sistema e dá para testar no Linux. A GUI depende da interface
+`gui.Controller`.
 
 Limitações conhecidas: VPNs que forçam o próprio DNS, apps que embutem IPs
 fixos sem processo identificável, e root (o próprio usuário pode desfazer tudo;

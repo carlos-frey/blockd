@@ -139,7 +139,7 @@ func isTerminal(w io.Writer) bool {
 		return false
 	}
 	st, err := f.Stat()
-	return err == nil && st.Mode()&os.ModeCharDevice != 0
+	return err == nil && st.Mode()&os.ModeCharDevice != 0 && enableVT(f)
 }
 
 const (

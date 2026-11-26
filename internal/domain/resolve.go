@@ -194,7 +194,7 @@ type IPRule struct {
 type Plan struct {
 	DNSDomains []string `json:"dns_domains"` // sinkholed (with subdomains)
 	IPDomains  []string `json:"ip_domains"`  // also resolved and dropped by IP
-	Processes  []string `json:"processes"`   // network cut via cgroup
+	Processes  []string `json:"processes"`   // network cut (cgroup on Linux, WFP on Windows)
 	Static     []IPRule `json:"static"`
 }
 
