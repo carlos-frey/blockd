@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256">
+  <!-- O mesmo logo da barra lateral da GUI (internal/gui/layout.go, banIcon), em 256px. -->
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ff6b79"/>
+      <stop offset="1" stop-color="#f24b5c"/>
+    </linearGradient>
+  </defs>
+  <rect width="256" height="256" rx="74" fill="url(#bg)"/>
+  <g fill="none" stroke="#fff" stroke-width="17.5" stroke-linecap="round">
+    <circle cx="128" cy="128" r="64"/>
+    <path d="M82.75 82.75 173.25 173.25"/>
+  </g>
+</svg>

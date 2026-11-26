@@ -1,0 +1,157 @@
+#!/bin/sh
+# AppRun do blockd. Abre a GUI; se o serviço (daemon root + systemd) ainda não
+# estiver instalado, ou for de outra versão, oferece instalar/atualizar, pedindo
+# a senha de administrador (pkexec, ou sudo no terminal).
+#
+#   blockd-x86_64.AppImage                abre a GUI (args repassados ao blockd-gui)
+#   blockd-x86_64.AppImage --install      instala ou atualiza o serviço
+#   blockd-x86_64.AppImage --uninstall    remove o serviço (o estado fica em /var/lib/blockd)
+#   blockd-x86_64.AppImage --status       versões e estado do serviço
+#   blockd-x86_64.AppImage blockctl ...   roda a CLI
+set -eu
+here=${APPDIR:-$(cd "$(dirname "$(readlink -f "$0")")" && pwd)}
+share=$here/usr/share/blockd
+version=$(cat "$share/VERSION")
+PREFIX=/usr/local
+state=${XDG_STATE_HOME:-$HOME/.local/state}/blockd
+
+installed=
+[ -f "$PREFIX/share/blockd/VERSION" ] && installed=$(cat "$PREFIX/share/blockd/VERSION")
+# blockctl do sistema: o pacote da distro ou o que o AppImage instalou.
+sysctl=
+if [ -x /usr/bin/blockctl ]; then sysctl=/usr/bin/blockctl
+elif [ -x "$PREFIX/bin/blockctl" ]; then sysctl=$PREFIX/bin/blockctl
+fi
+
+gui() { [ -n "${DISPLAY:-}${WAYLAND_DISPLAY:-}" ] && ! [ -t 0 ]; }
+msg() { # msg <texto> <info|error>
+    printf '%s\n' "$1" >&2
+    if gui; then
+        if command -v zenity >/dev/null 2>&1; then zenity --"$2" --title=blockd --no-wrap --text="$1" 2>/dev/null || true
+        elif command -v kdialog >/dev/null 2>&1; then kdialog --title blockd --"$([ "$2" = error ] && echo error || echo msgbox)" "$1" 2>/dev/null || true
+        elif command -v notify-send >/dev/null 2>&1; then notify-send blockd "$1" || true; fi
+    fi
+}
+ask() { # ask <pergunta> <sim> <não>: 0 = sim
+    if gui; then
+        if command -v zenity >/dev/null 2>&1; then
+            zenity --question --title=blockd --no-wrap --text="$1" --ok-label="$2" --cancel-label="$3" 2>/dev/null
+            return
+        elif command -v kdialog >/dev/null 2>&1; then
+            kdialog --title blockd --yes-label "$2" --no-label "$3" --yesno "$1" 2>/dev/null
+            return
+        fi
+    fi
+    if [ -t 0 ]; then
+        printf '%s [S/n] ' "$1" >&2
+        read -r answer || answer=n
+        case $answer in ''|s|S|sim|y|Y) return 0 ;; *) return 1 ;; esac
+    fi
+    return 1
+}
+
+# as_root <script> [args]: copia o payload para fora do FUSE e roda o script como
+# root, com a cópia como primeiro argumento.
+as_root() {
+    script=$1; shift
+    stage=$(mktemp -d "${TMPDIR:-/tmp}/blockd-setup.XXXXXX")
+    log=$stage/log
+    mkdir -p "$stage/bin"
+    cp "$here/usr/bin/blockd" "$here/usr/bin/blockctl" "$here/usr/bin/blockd-gui" "$stage/bin/"
+    cp -R "$share" "$stage/share"
+    rc=0
+    if [ "$(id -u)" = 0 ]; then
+        /bin/sh "$stage/share/$script" "$stage" "$@" || rc=$?
+    elif [ -t 0 ] && command -v sudo >/dev/null 2>&1; then
+        sudo /bin/sh "$stage/share/$script" "$stage" "$@" || rc=$?
+    elif command -v pkexec >/dev/null 2>&1; then
+        pkexec /bin/sh "$stage/share/$script" "$stage" "$@" >"$log" 2>&1 || rc=$?
+        cat "$log" >&2
+        case $rc in
+            0) gui && msg "$(cat "$log")" info ;;
+            126|127) msg "Instalação cancelada: a senha de administrador não foi confirmada." error ;;
+            *) msg "$(cat "$log")" error ;;
+        esac
+    else
+        msg "Precisa de privilégio de administrador. Rode num terminal:  sudo $APPIMAGE --install" error
+        rc=1
+    fi
+    rm -rf "$stage"
+    return "$rc"
+}
+
+# needs_sg: o usuário já entrou no grupo blockd, mas esta sessão ainda não tem o grupo?
+needs_sg() {
+    getent group blockd >/dev/null 2>&1 || return 1
+    id -nG | tr ' ' '\n' | grep -qx blockd && return 1
+    getent group blockd | cut -d: -f4 | tr ',' '\n' | grep -qx "$(id -un)"
+}
+quote() { printf "'%s'" "$(printf '%s' "$1" | sed "s/'/'\\\\''/g")"; }
+
+run_gui() {
+    ctl=${sysctl:-$here/usr/bin/blockctl}
+    if needs_sg && command -v sg >/dev/null 2>&1; then
+        # Recém-instalado: roda com o grupo novo sem precisar sair da sessão.
+        cmd="exec $(quote "$here/usr/bin/blockd-gui") --blockctl $(quote "$ctl")"
+        for a in "$@"; do cmd="$cmd $(quote "$a")"; done
+        exec sg blockd -c "$cmd"
+    fi
+    exec "$here/usr/bin/blockd-gui" --blockctl "$ctl" "$@"
+}
+
+case "${1:-}" in
+    --install)
+        as_root install.sh "$(id -un)"
+        exit
+        ;;
+    --uninstall)
+        as_root uninstall.sh
+        exit
+        ;;
+    --status)
+        echo "AppImage:   blockd $version"
+        if [ -x /usr/bin/blockd ]; then echo "instalado:  pelo pacote da distro (/usr/bin/blockd)"
+        elif [ -n "$installed" ]; then echo "instalado:  blockd $installed em $PREFIX"
+        else echo "instalado:  não"; fi
+        echo "serviço:    $(systemctl is-active blockd.service 2>/dev/null || true)"
+        if id -nG | tr ' ' '\n' | grep -qx blockd; then echo "grupo:      $(id -un) está no grupo blockd"
+        elif needs_sg; then echo "grupo:      $(id -un) entrou no grupo blockd; saia e entre na sessão"
+        else echo "grupo:      $(id -un) não está no grupo blockd"; fi
+        exit 0
+        ;;
+    --version)
+        echo "$version"
+        exit 0
+        ;;
+    -h|--help)
+        sed -n '2,10p' "$0" | sed 's/^# \{0,1\}//'
+        echo
+        exec "$here/usr/bin/blockd-gui" -h
+        ;;
+    blockctl)
+        shift
+        exec "${sysctl:-$here/usr/bin/blockctl}" "$@"
+        ;;
+esac
+
+# GUI. Antes, garante o serviço (a não ser que ele venha do pacote da distro).
+if [ ! -x /usr/bin/blockd ]; then
+    if [ -z "$installed" ]; then
+        if ask "O serviço do blockd ainda não está instalado neste computador.
+
+Ele roda como administrador e mantém o firewall e o DNS
+sincronizados com o que você bloquear. Instalar agora?" "Instalar" "Agora não"; then
+            as_root install.sh "$(id -un)" || true
+        fi
+    elif [ "$installed" != "$version" ] && [ "$(cat "$state/skip-update" 2>/dev/null || true)" != "$version" ]; then
+        if ask "O serviço instalado é o blockd $installed. Este AppImage é o $version.
+
+Atualizar o serviço?" "Atualizar" "Manter $installed"; then
+            as_root install.sh "$(id -un)" || true
+        else
+            mkdir -p "$state" && printf '%s\n' "$version" > "$state/skip-update"
+        fi
+    fi
+    [ -x "$PREFIX/bin/blockctl" ] && sysctl=$PREFIX/bin/blockctl
+fi
+run_gui "$@"

@@ -20,6 +20,23 @@ blockd-gui (ImGui)  ──exec──▶  blockctl --json  ──socket──▶ 
 - **blockd-gui**: a interface gráfica. Não fala com o daemon diretamente: tudo passa
   pelo `blockctl --json`.
 
+## Download
+
+Página: **[carlos-frey.github.io/blockd](https://carlos-frey.github.io/blockd)**. Os arquivos
+ficam nos [Releases](https://github.com/carlos-frey/blockd/releases/latest).
+
+- **Linux**: [`blockd-x86_64.AppImage`](https://github.com/carlos-frey/blockd/releases/latest/download/blockd-x86_64.AppImage).
+  Depois de `chmod +x`, é só abrir: na primeira vez ele oferece instalar o serviço em
+  `/usr/local` (pede a senha de administrador) e abre a GUI. Também aceita `--install`,
+  `--uninstall`, `--status` e `blockctl …`. Precisa de systemd com `systemd-resolved` ativo,
+  `nftables` e `dnsmasq`.
+- **Windows**: [`blockd-setup.exe`](https://github.com/carlos-frey/blockd/releases/latest/download/blockd-setup.exe)
+  (veja [Windows](#windows)).
+
+Cada tag `v*` gera a release pelo `.github/workflows/release.yml`. Para gerar o AppImage
+localmente: `make appimage` (sai em `dist/`). A página fica em `site/` e é publicada pelo
+`.github/workflows/pages.yml` (para ver localmente: `python -m http.server -d site`).
+
 ## Instalação (Arch)
 
 ```sh

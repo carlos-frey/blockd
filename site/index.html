@@ -1,0 +1,384 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>blockd — bloqueie o que vicia, no Linux e no Windows</title>
+<meta name="description" content="Bloqueador de apps e sites que viciam, de código aberto. Perfis, agenda semanal e foco com hora para acabar. Firewall e DNS sempre sincronizados com o que você vê.">
+<meta name="theme-color" content="#0d0f13">
+<meta property="og:title" content="blockd — bloqueie o que vicia">
+<meta property="og:description" content="Perfis, agenda semanal e foco com hora para acabar. No Linux e no Windows, de código aberto.">
+<meta property="og:type" content="website">
+<meta property="og:image" content="assets/hero.webp">
+<link rel="icon" href="assets/blockd.svg" type="image/svg+xml">
+<link rel="preload" href="assets/fonts/NotoSans-Regular.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="assets/fonts/NotoSans-Bold.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="style.css">
+<script src="main.js" defer></script>
+</head>
+<body data-os="other">
+
+<a class="skip" href="#conteudo">Pular para o conteúdo</a>
+
+<header class="nav">
+  <div class="wrap nav__in">
+    <a class="brand" href="#" aria-label="blockd, início">
+      <img src="assets/blockd.svg" alt="" width="30" height="30">
+      <span>blockd</span>
+    </a>
+    <nav aria-label="Seções">
+      <a href="#como-funciona">Como funciona</a>
+      <a href="#modos">Modos</a>
+      <a href="#por-dentro">Por dentro</a>
+      <a href="#faq">Dúvidas</a>
+    </nav>
+    <div class="nav__end">
+      <a class="gh" href="https://github.com/carlos-frey/blockd" aria-label="Código no GitHub">
+        <svg viewBox="0 0 16 16" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M8 0a8 8 0 0 0-2.53 15.59c.4.07.55-.17.55-.38v-1.33c-2.23.48-2.7-1.07-2.7-1.07-.36-.92-.89-1.17-.89-1.17-.73-.5.05-.49.05-.49.8.06 1.23.83 1.23.83.72 1.22 1.88.87 2.33.66.07-.52.28-.87.5-1.07-1.77-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.83-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82a7.6 7.6 0 0 1 4 0c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.28.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48v2.2c0 .21.15.46.55.38A8 8 0 0 0 8 0Z"/></svg>
+      </a>
+      <a class="btn btn--sm" href="#download">Baixar</a>
+    </div>
+  </div>
+</header>
+
+<main id="conteudo">
+
+<!-- ── Hero ─────────────────────────────────────────────── -->
+<section class="hero">
+  <div class="wrap hero__text">
+    <p class="eyebrow"><span class="dot dot--ok"></span> Código aberto · GPL-3.0 · Linux e Windows</p>
+    <h1>Bloqueie o que vicia.<br><span class="grad">Na hora que você combinou.</span></h1>
+    <p class="lead">
+      Escolha apps num catálogo, monte perfis e deixe o blockd ligar o bloqueio sozinho nos
+      horários da semana, ou num foco com hora para acabar. Por baixo, firewall e DNS ficam
+      sempre sincronizados com o que você vê na tela.
+    </p>
+    <div class="cta">
+      <a class="btn btn--lg dl-primary" href="#download" data-dl="primary">
+        <span class="btn__icon" data-icon></span>
+        <span><span data-label>Baixar o blockd</span><small data-sub>Linux e Windows</small></span>
+      </a>
+      <a class="btn btn--lg btn--ghost" href="https://github.com/carlos-frey/blockd">Ver o código</a>
+    </div>
+    <p class="cta__alt" data-alt hidden></p>
+  </div>
+
+  <div class="wrap shot-wrap">
+    <div class="glow" aria-hidden="true"></div>
+    <figure class="window">
+      <div class="window__bar" aria-hidden="true"><i></i><i></i><i></i><span>blockd</span></div>
+      <img src="assets/hero.webp" width="1200" height="660"
+           alt="Visão geral do blockd: 16 apps bloqueados, a agenda Trabalho valendo até 12:00, um foco até 10:36 e a lista do que está bloqueado agora.">
+    </figure>
+    <div class="float float--a" aria-hidden="true">
+      <span class="x">✕</span><div><b>Instagram</b><small>bloqueado pelo foco · até 10:36</small></div>
+    </div>
+    <div class="float float--b" aria-hidden="true">
+      <span class="lock"></span><div><b>Travado</b><small>nada afrouxa até a janela acabar</small></div>
+    </div>
+  </div>
+</section>
+
+<!-- ── Catálogo ─────────────────────────────────────────── -->
+<section class="strip" aria-label="Catálogo">
+  <div class="wrap strip__in">
+    <p><b>28 apps no catálogo</b>, prontos para bloquear. E você adiciona os seus.</p>
+    <ul class="chips">
+      <li style="--c:#ff6b9a">Instagram</li><li style="--c:#ff6b9a">TikTok</li><li style="--c:#ff6b9a">X / Twitter</li>
+      <li style="--c:#ff6b9a">Reddit</li><li style="--c:#ff8a4c">YouTube</li><li style="--c:#ff8a4c">Twitch</li>
+      <li style="--c:#ff8a4c">Netflix</li><li style="--c:#5cc8ff">Discord</li><li style="--c:#5cc8ff">WhatsApp</li>
+      <li style="--c:#8bd450">Steam</li><li style="--c:#8bd450">Roblox</li><li style="--c:#8bd450">Valorant</li>
+      <li style="--c:#f2c94c">G1</li><li style="--c:#f2c94c">Hacker News</li><li style="--c:#8b7cff">+ os seus</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ── Como funciona ────────────────────────────────────── -->
+<section id="como-funciona" class="section">
+  <div class="wrap">
+    <header class="sec-head">
+      <p class="kicker">Como funciona</p>
+      <h2>Três jeitos de ligar o bloqueio</h2>
+      <p>Valem ao mesmo tempo. O que fica bloqueado é a união de tudo, e desligar um não libera o
+        que outro ainda segura.</p>
+    </header>
+
+    <div class="cards3">
+      <article class="card">
+        <div class="card__icon" style="--c:#8b7cff">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h10" /></svg>
+        </div>
+        <h3>Catálogo e perfis</h3>
+        <p>Ligue um app avulso ou um perfil inteiro: Redes sociais, Vídeo, Games, Trabalho,
+          Foco total. Ou monte o seu a partir do que já está bloqueado.</p>
+        <code class="mini">blockctl profile on redes-sociais games</code>
+      </article>
+      <article class="card">
+        <div class="card__icon" style="--c:#5cc8ff">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="5" width="16" height="15" rx="3"/><path d="M4 10h16M9 3v4M15 3v4"/></svg>
+        </div>
+        <h3>Agenda semanal</h3>
+        <p>Janelas como <em>seg–sex, 9h às 12h</em> ligam os perfis sozinhas, no minuto exato.
+          Cruzam a meia-noite, e um feriado se pula com um comando.</p>
+        <code class="mini">--window "seg-sex 09:00-12:00"</code>
+      </article>
+      <article class="card">
+        <div class="card__icon" style="--c:#ff5d6c">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2M10 2h4"/></svg>
+        </div>
+        <h3>Foco com hora para acabar</h3>
+        <p>50 minutos agora, ou até as 18h. O foco desliga sozinho no fim, e dá para estender
+          sem recomeçar.</p>
+        <code class="mini">blockctl focus start redes-sociais --for 50m</code>
+      </article>
+    </div>
+
+    <div class="split">
+      <figure class="window window--flat">
+        <img src="assets/sched.webp" width="1200" height="700" loading="lazy"
+             alt="Tela de agenda: um foco de 49 minutos travado até 10:36 e a semana com as janelas das agendas Trabalho e Noite.">
+      </figure>
+      <div class="split__text">
+        <h3>A semana inteira num olhar</h3>
+        <p>A agenda mostra o que vale agora, o que vem depois e quando o bloqueio muda sozinho.
+          A linha vermelha é o agora.</p>
+        <ul class="ticks">
+          <li>Janelas encostadas viram um bloco só</li>
+          <li><code>00:00-00:00</code> é o dia inteiro; <code>23:00-07:00</code> cruza a meia-noite</li>
+          <li>Pausar vale até o fim da janela atual e respeita o modo</li>
+          <li>Depois da suspensão, a reconciliação a cada 15 s coloca tudo em dia</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── Modos ────────────────────────────────────────────── -->
+<section id="modos" class="section section--alt">
+  <div class="wrap">
+    <header class="sec-head">
+      <p class="kicker">Modos</p>
+      <h2>O quanto é difícil desistir</h2>
+      <p>Cada agenda e cada foco tem um modo. Ele diz o que acontece quando bate a vontade de
+        desligar <em>enquanto o bloqueio vale</em>.</p>
+    </header>
+
+    <div class="modes">
+      <div class="modes__scale" aria-hidden="true"></div>
+      <article class="mode" style="--c:#3dd68c">
+        <p class="mode__tag">livre</p>
+        <h3>Pausa na hora</h3>
+        <p>Para quando você só quer um lembrete. A pausa vale até o fim da janela.</p>
+      </article>
+      <article class="mode" style="--c:#ffb447">
+        <p class="mode__tag">fricção</p>
+        <h3>Pede uma frase, e espera</h3>
+        <p>Você digita uma frase, que o daemon confere, e a pausa só começa depois de N minutos.
+          Muitas vezes a vontade passa antes disso. Dá para cancelar o pedido no meio.</p>
+      </article>
+      <article class="mode" style="--c:#ff5d6c">
+        <p class="mode__tag">travado</p>
+        <h3>Nada afrouxa</h3>
+        <p>Até a janela acabar, o daemon recusa qualquer coisa que afrouxe o bloqueio: desligar,
+          apagar, encurtar, trocar por um modo mais fraco. Acrescentar sempre pode.</p>
+      </article>
+    </div>
+
+    <div class="term" role="img" aria-label="Exemplo de terminal: um foco travado recusa a pausa, mas aceita ser estendido.">
+      <div class="term__bar"><i></i><i></i><i></i></div>
+<pre><span class="p">$</span> blockctl focus start redes-sociais --for 50m --mode travado
+<span class="ok">●</span> foco f1: redes-sociais até 10:36 · travado
+<span class="p">$</span> blockctl focus stop f1
+<span class="err">erro:</span> não dá para pausar o foco antes de 10:36: o modo é travado
+<span class="p">$</span> blockctl focus extend f1 --for 15m
+<span class="ok">●</span> foco f1: redes-sociais até 10:51 · travado</pre>
+    </div>
+  </div>
+</section>
+
+<!-- ── Por dentro ───────────────────────────────────────── -->
+<section id="por-dentro" class="section">
+  <div class="wrap">
+    <header class="sec-head">
+      <p class="kicker">Por dentro</p>
+      <h2>Não é um arquivo hosts</h2>
+      <p>Um daemon com privilégio de administrador aplica o bloqueio no sistema e o reconcilia a
+        cada 15 segundos. Se alguém mexer no firewall ou no DNS por fora, ele reaplica e
+        registra.</p>
+    </header>
+
+    <div class="cards4">
+      <article class="card card--tight">
+        <h3><span class="tag">DNS</span> Domínio e todos os subdomínios</h3>
+        <p>Os nomes bloqueados respondem <code>NXDOMAIN</code>. Os resolvedores
+          DNS-over-HTTPS públicos também são fechados, senão o navegador contornaria.</p>
+      </article>
+      <article class="card card--tight">
+        <h3><span class="tag">Firewall</span> IPs e portas</h3>
+        <p>Regras em <code>nftables</code> no Linux e filtros <abbr title="Windows Filtering Platform">WFP</abbr>
+          no Windows, que valem com o firewall do sistema ligado ou desligado.</p>
+      </article>
+      <article class="card card--tight">
+        <h3><span class="tag">Apps</span> Abertos, mas sem rede</h3>
+        <p>Discord, Steam e afins continuam abertos, só que sem internet. Jogos abertos pela
+          Steam herdam o bloqueio.</p>
+      </article>
+      <article class="card card--tight">
+        <h3><span class="tag">Abas</span> As já abertas também caem</h3>
+        <p>Quando um site entra no bloqueio, o blockd derruba as conexões em uso, e o x.com que
+          estava aberto para de carregar em instantes.</p>
+      </article>
+    </div>
+
+    <div class="arch" aria-label="Arquitetura">
+      <div class="arch__row">
+        <div class="node"><b>blockd-gui</b><small>a interface</small></div>
+        <div class="edge"><span>exec</span></div>
+        <div class="node"><b>blockctl --json</b><small>CLI que é a API</small></div>
+        <div class="edge"><span>socket</span></div>
+        <div class="node node--core"><b>blockd</b><small>daemon, root</small></div>
+      </div>
+      <div class="arch__os">
+        <div><p class="os">Linux</p><p>nftables · dnsmasq + systemd-resolved · cgroup</p></div>
+        <div><p class="os">Windows</p><p>WFP · regras NRPT + sinkhole DNS · filtro por executável</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── Download ─────────────────────────────────────────── -->
+<section id="download" class="section section--alt">
+  <div class="wrap">
+    <header class="sec-head">
+      <p class="kicker">Download</p>
+      <h2>Baixe o blockd</h2>
+      <p>Gratuito e de código aberto. <span data-version>Sempre a última versão.</span></p>
+    </header>
+
+    <p class="notice" data-norelease hidden>
+      A primeira versão ainda está saindo do forno. Enquanto isso, dá para compilar seguindo o
+      <a href="https://github.com/carlos-frey/blockd#instalação-arch">README</a>.
+    </p>
+
+    <div class="dl">
+      <article class="dl__card" data-os-card="linux">
+        <p class="rec">Recomendado para você</p>
+        <div class="dl__head">
+          <svg class="os-ico" viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round" stroke-linecap="round" d="M12 2.8 20 7.2v9.6l-8 4.4-8-4.4V7.2zM4.3 7.4 12 11.8l7.7-4.4M12 11.8v9.2"/></svg>
+          <div><h3>Linux</h3><p>AppImage · x86_64</p></div>
+        </div>
+        <a class="btn btn--block" href="https://github.com/carlos-frey/blockd/releases/latest/download/blockd-x86_64.AppImage" data-asset="blockd-x86_64.AppImage">
+          Baixar blockd-x86_64.AppImage <small data-size></small>
+        </a>
+        <ol class="steps">
+          <li>Dê permissão de execução:
+            <div class="copy"><code>chmod +x blockd-x86_64.AppImage</code><button type="button" data-copy="chmod +x blockd-x86_64.AppImage" aria-label="Copiar comando">Copiar</button></div>
+          </li>
+          <li>Abra o arquivo. Na primeira vez ele oferece instalar o serviço e pede a senha de
+            administrador.</li>
+          <li>Pronto: a GUI abre, e o bloqueio continua valendo mesmo com ela fechada.</li>
+        </ol>
+        <details class="req">
+          <summary>Requisitos e dependências</summary>
+          <p>systemd com <code>systemd-resolved</code> ativo, mais <code>nftables</code> e
+            <code>dnsmasq</code>. Se faltar algo, o instalador mostra o comando da sua distro:</p>
+          <pre>sudo apt install nftables dnsmasq-base   <span class="c"># Debian, Ubuntu</span>
+sudo dnf install nftables dnsmasq        <span class="c"># Fedora</span>
+sudo pacman -S nftables dnsmasq          <span class="c"># Arch</span></pre>
+          <p>No terminal: <code>./blockd-x86_64.AppImage --status</code>, <code>--install</code>,
+            <code>--uninstall</code> ou <code>blockctl …</code>. No Arch também dá para usar o
+            <a href="https://github.com/carlos-frey/blockd/blob/main/packaging/PKGBUILD">PKGBUILD</a>.</p>
+        </details>
+      </article>
+
+      <article class="dl__card" data-os-card="windows">
+        <p class="rec">Recomendado para você</p>
+        <div class="dl__head">
+          <svg class="os-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 5.5 10.5 4.4v7.1H3V5.5Zm8.5-1.2L21 3v8.5h-9.5V4.3ZM3 12.5h7.5v7.1L3 18.5v-6Zm8.5 0H21V21l-9.5-1.3v-7.2Z"/></svg>
+          <div><h3>Windows</h3><p>Instalador · 10 (1803+) ou 11, 64 bits</p></div>
+        </div>
+        <a class="btn btn--block" href="https://github.com/carlos-frey/blockd/releases/latest/download/blockd-setup.exe" data-asset="blockd-setup.exe">
+          Baixar blockd-setup.exe <small data-size></small>
+        </a>
+        <ol class="steps">
+          <li>Abra o <code>blockd-setup.exe</code> e aceite o pedido de administrador.</li>
+          <li>O instalador não é assinado, então o SmartScreen avisa na primeira vez: clique em
+            <b>Mais informações</b> e depois em <b>Executar assim mesmo</b>.</li>
+          <li>Ele instala o serviço e aparece em <b>Configurações › Aplicativos</b>, de onde você
+            desinstala quando quiser.</li>
+        </ol>
+        <details class="req">
+          <summary>Instalação sem perguntas</summary>
+          <pre>blockd-setup.exe -install
+blockd-setup.exe -uninstall</pre>
+          <p>Rodar o setup de novo atualiza, ou remove, o que já estiver instalado.</p>
+        </details>
+      </article>
+    </div>
+
+    <p class="dl__more">
+      <a href="https://github.com/carlos-frey/blockd/releases/latest/download/SHA256SUMS">SHA256SUMS</a>
+      <span>·</span>
+      <a href="https://github.com/carlos-frey/blockd/releases">Todas as versões</a>
+      <span>·</span>
+      <a href="https://github.com/carlos-frey/blockd">Código-fonte</a>
+      <span class="mac" data-mac hidden>· macOS ainda não é suportado</span>
+    </p>
+  </div>
+</section>
+
+<!-- ── FAQ ──────────────────────────────────────────────── -->
+<section id="faq" class="section">
+  <div class="wrap wrap--narrow">
+    <header class="sec-head">
+      <p class="kicker">Dúvidas</p>
+      <h2>Sem promessa milagrosa</h2>
+    </header>
+
+    <details class="faq" open>
+      <summary>Dá para burlar?</summary>
+      <p>Dá, e isso é de propósito. Com a senha de administrador você consegue desmontar tudo.
+        As travas existem contra a impulsividade, não contra o dono do computador. A ideia é
+        colocar fricção suficiente para a vontade passar. VPNs que forçam o próprio DNS e apps
+        que embutem IPs fixos também escapam do bloqueio por DNS.</p>
+    </details>
+    <details class="faq">
+      <summary>Fechar a janela ou parar o serviço libera os sites?</summary>
+      <p>Não. As regras ficam no sistema e continuam valendo com a GUI fechada, e até com o
+        serviço parado. Para limpar tudo é preciso remover o blockd ou rodar o
+        <code>blockd teardown</code> como administrador.</p>
+    </details>
+    <details class="faq">
+      <summary>O blockd manda algum dado para fora?</summary>
+      <p>Não. Não tem conta, nuvem nem telemetria. O estado fica no próprio computador
+        (<code>/var/lib/blockd</code> ou <code>%ProgramData%\blockd</code>), e o código está aberto
+        para quem quiser conferir.</p>
+    </details>
+    <details class="faq">
+      <summary>Como desinstalar?</summary>
+      <p>No Linux, rode <code>./blockd-x86_64.AppImage --uninstall</code>. No Windows, vá em
+        Configurações › Aplicativos › blockd. Nos dois casos as regras saem do sistema, e o
+        estado fica guardado caso você volte.</p>
+    </details>
+    <details class="faq">
+      <summary>Tem linha de comando?</summary>
+      <p>A GUI é só uma casca sobre o <code>blockctl</code>. Com <code>--json</code>, todo
+        comando devolve <code>{"ok":true,"data":…}</code>, então dá para automatizar o que
+        quiser: atalhos, scripts, integração com o gerenciador de janelas.</p>
+    </details>
+  </div>
+</section>
+
+</main>
+
+<footer class="foot">
+  <div class="wrap foot__in">
+    <a class="brand" href="#"><img src="assets/blockd.svg" alt="" width="24" height="24"><span>blockd</span></a>
+    <p>Menos tela, mais foco. Software livre sob a
+      <a href="https://github.com/carlos-frey/blockd/blob/main/LICENSE">GPL-3.0</a>.</p>
+    <a href="https://github.com/carlos-frey/blockd">github.com/carlos-frey/blockd</a>
+  </div>
+</footer>
+
+</body>
+</html>

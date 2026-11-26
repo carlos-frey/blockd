@@ -3,7 +3,7 @@ DESTDIR ?=
 GO      ?= go
 BIN     := bin
 
-.PHONY: all cli gui windows windows-gui windows-setup test test-netns install uninstall clean
+.PHONY: all cli gui appimage windows windows-gui windows-setup test test-netns install uninstall clean
 
 all: cli gui
 
@@ -13,6 +13,13 @@ cli:
 # cimgui-go compila o Dear ImGui via cgo: a primeira vez leva alguns minutos.
 gui:
 	$(GO) build -trimpath -o $(BIN)/ ./cmd/blockd-gui
+
+# AppImage (x86_64): a GUI mais daemon e CLI sem cgo, que rodam em qualquer
+# distro. Abrir o AppImage oferece instalar o serviço (packaging/appimage).
+appimage: gui
+	CGO_ENABLED=0 $(GO) build -trimpath -ldflags "-s -w" -o $(BIN)/appimage/ ./cmd/blockd ./cmd/blockctl
+	cp $(BIN)/blockd-gui $(BIN)/appimage/
+	packaging/appimage/build-appimage.sh $(BIN)/appimage $(VERSION) dist
 
 # Windows (amd64): daemon e CLI compilam cruzado sem cgo. Instale no Windows
 # com packaging/windows/install.ps1 (veja o README).
@@ -54,6 +61,7 @@ install:
 	install -Dm644 packaging/blockd-dns.service $(DESTDIR)$(PREFIX)/lib/systemd/system/blockd-dns.service
 	install -Dm644 packaging/blockd.sysusers    $(DESTDIR)$(PREFIX)/lib/sysusers.d/blockd.conf
 	install -Dm644 packaging/blockd-gui.desktop $(DESTDIR)$(PREFIX)/share/applications/blockd-gui.desktop
+	install -Dm644 packaging/blockd.svg         $(DESTDIR)$(PREFIX)/share/icons/hicolor/scalable/apps/blockd.svg
 	install -Dm644 README.md                    $(DESTDIR)$(PREFIX)/share/doc/blockd/README.md
 ifeq ($(DESTDIR),)
 	systemd-sysusers blockd.conf
@@ -71,9 +79,10 @@ uninstall:
 	rm -f $(DESTDIR)$(PREFIX)/bin/blockd $(DESTDIR)$(PREFIX)/bin/blockctl $(DESTDIR)$(PREFIX)/bin/blockd-gui
 	rm -f $(DESTDIR)$(PREFIX)/lib/systemd/system/blockd.service $(DESTDIR)$(PREFIX)/lib/systemd/system/blockd-dns.service
 	rm -f $(DESTDIR)$(PREFIX)/lib/sysusers.d/blockd.conf $(DESTDIR)$(PREFIX)/share/applications/blockd-gui.desktop
+	rm -f $(DESTDIR)$(PREFIX)/share/icons/hicolor/scalable/apps/blockd.svg
 	rm -rf $(DESTDIR)$(PREFIX)/share/doc/blockd
 	-systemctl daemon-reload
 	@echo "Estado mantido em /var/lib/blockd (apague à mão se quiser)."
 
 clean:
-	rm -rf $(BIN)
+	rm -rf $(BIN) dist

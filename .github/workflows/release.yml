@@ -1,0 +1,38 @@
+# Publica uma release a cada tag v*: AppImage (Linux) e blockd-setup.exe (Windows),
+# com nomes fixos para os links /releases/latest/download/<arquivo> da página.
+name: Release
+on:
+  push:
+    tags: ["v*"]
+permissions:
+  contents: write
+jobs:
+  release:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # git describe --tags
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - name: Dependências
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            libgl1-mesa-dev xorg-dev mingw-w64 librsvg2-bin dnsmasq-base nftables
+      - run: make test
+      - name: AppImage
+        run: make appimage
+      - name: Instalador do Windows
+        run: make windows-gui windows-setup
+      - name: Publica
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir out
+          cp dist/blockd-x86_64.AppImage bin/windows/blockd-setup.exe out/
+          cd out
+          sha256sum blockd-x86_64.AppImage blockd-setup.exe > SHA256SUMS
+          gh release create "$GITHUB_REF_NAME" blockd-x86_64.AppImage blockd-setup.exe SHA256SUMS \
+            --title "blockd ${GITHUB_REF_NAME#v}" --generate-notes

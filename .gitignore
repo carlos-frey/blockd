@@ -4,3 +4,5 @@ packaging/src/
 packaging/pkg/
 cmd/blockd-setup/payload/*
 !cmd/blockd-setup/payload/LEIA-ME.txt
+dist/
+.tools/
